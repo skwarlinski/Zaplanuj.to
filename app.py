@@ -45,13 +45,13 @@ elif data_source == "📋 Wklej dane ręcznie":
 
 # NUM GROUPS INPUT
 st.sidebar.subheader("🎯 Dodaj grupy docelowe")
-num_groups = st.sidebar.number_input(" Ile grup docelowych chcesz dodać?", min_value=1, max_value=20, step=1)
+num_groups = st.sidebar.number_input(" Ile grup docelowych chcesz dodać?", min_value=2, max_value=20, step=1)
 
 # CLUSTERING MODEL TRAINING
 if df is not None and num_groups:
     try:
         st.subheader("📊 Dane użytkownika do klastrowania")
-        st.dataframe(df.head())
+        st.dataframe(df)
 
         placeholder = st.empty()
         with placeholder.container():
