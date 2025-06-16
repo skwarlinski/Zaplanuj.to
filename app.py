@@ -222,7 +222,7 @@ if selected == "Kontakt":
     with col5:
         st.markdown("""
         <div style="text-align: center;">
-        <a href="https://www.linkedin.com/in/twoja_nazwa" target="_blank">
+        <a href="https://www.linkedin.com/in/hubert-skwarlinski-895437368/" target="_blank">
             <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn Badge">
         </a>
         </div>
