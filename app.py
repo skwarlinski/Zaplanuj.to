@@ -2,17 +2,19 @@
 import streamlit as st
 import pandas as pd
 from io import StringIO
+from pycaret.clustering import setup, create_model, assign_model, plot_model
+import matplotlib.pyplot as plt
+import time
 
-st.title("Generator marketingowych kampanii")
-
+st.sidebar.title("Generator marketingowych kampanii")
 
 # FILE UPLOAD OR MANUAL INPUT
 st.sidebar.subheader("📊 Wczytaj dane kampanii")
-upload_method = st.sidebar.radio("Wybierz metodę przesyłania danych:", ["📁 Prześlij plik CSV", "📋 Wklej dane ręcznie"] )
+data_source = st.sidebar.radio("Wybierz metodę przesyłania danych:", ["📁 Prześlij plik CSV", "📋 Wklej dane ręcznie"] )
 
 df = None
 
-if upload_method == "📁 Prześlij plik CSV":
+if data_source == "📁 Prześlij plik CSV":
     uploaded_file = st.file_uploader("Prześlij plik CSV", type=["csv"])
     if uploaded_file is not None:
         try:
@@ -21,53 +23,63 @@ if upload_method == "📁 Prześlij plik CSV":
         except Exception as e:
             st.error(f"Wystąpił błąd podczas wczytywania pliku: {e}")
 
-elif upload_method == "📋 Wklej dane ręcznie":
-    text_input = st.text_area("Wklej dane CSV (z nagłówkiem)", height=200, placeholder="przyklad : \nimie,wartosc\nAnna,100\nJan,200")
+elif data_source == "📋 Wklej dane ręcznie":
+    raw_text = st.text_area("Wklej dane CSV (z nagłówkiem)", height=200, placeholder="przyklad : \nimie,wartosc\nAnna,100\nJan,200")
 
     if st.button("Wczytaj dane"):
-        if text_input.strip():
+        if raw_text.strip():
             try:
-                df = pd.read_csv(StringIO(text_input))
-                st.success("Dane zostały wczytane poprawnie!")
+                df = pd.read_csv(StringIO(raw_text))
+                placeholder = st.empty()
+                with placeholder.container():
+                    with st.spinner("Wczytywanie danych..."):
+                        time.sleep(3)
+                    placeholder.success("✅ Dane zostały wczytane poprawnie!")
+                    time.sleep(2)
+                placeholder.empty()
             except Exception as e:
                 st.error(f"Błąd przy wczytywaniu danych: {e}")
             
         else:
             st.warning("Wprowadź dane przed kliknięciem przycisku.")
 
-if df is not None:
-    st.subheader("🔍 Podgląd danych")
-    st.dataframe(df)
-
-
-# TARGET GROUPS INPUT
+# NUM GROUPS INPUT
 st.sidebar.subheader("🎯 Dodaj grupy docelowe")
 num_groups = st.sidebar.number_input(" Ile grup docelowych chcesz dodać?", min_value=1, max_value=20, step=1)
 
-if "target_groups" not in st.session_state:
-    st.session_state.target_groups = [{} for _ in range(num_groups)]
+# CLUSTERING MODEL TRAINING
+if df is not None and num_groups:
+    try:
+        st.subheader("📊 Dane użytkownika do klastrowania")
+        st.dataframe(df.head())
 
-if len(st.session_state.target_groups) != num_groups:
-    st.session_state.target_groups = [{} for _ in range(num_groups)]
+        placeholder = st.empty()
+        with placeholder.container():
+            with st.spinner(f"Trenuję model z {num_groups} grupami..."):
+                time.sleep(3)
+            placeholder.success("✅ Model został wytrenowany!")
+            time.sleep(2)
+        placeholder.empty()
 
-st.subheader("📝 Wypełnij dane dla każdej grupy:")
+        setup(
+            data=df,
+            normalize=True,
+            verbose=False,
+            session_id=42
+        )
 
-for i in range(num_groups):
-    with st.expander(f"Grupa {i + 1}", expanded=True):
-        group_name = st.text_input(f"🧑‍🤝‍🧑 Nazwa grupy {i+1}", key=f"name_{i}")
-        age_range = st.text_input(f"🎂 Przedział wiekowy {i+1}", key=f"age_{i}")
-        interests = st.text_area(f"📚 Zainteresowania {i+1}", key=f"interests_{i}")
-        budget = st.number_input(f"💰 Budżet reklamowy {i+1} (zł)", min_value=0, step=100, key=f"budget_{i}")
+        model = create_model('kmeans', num_clusters=num_groups)
+        clustered_df = assign_model(model)
 
-        st.session_state.target_groups[i] = {
-            "Nazwa grupy": group_name,
-            "Przedział wiekowy": age_range,
-            "Zainteresowania": interests,
-            "Budżet": budget
-        }
+    
+        clustered_df = clustered_df.rename(columns={'Cluster': 'Grupa docelowa'})
+        clustered_df["Grupa docelowa"] = clustered_df["Grupa docelowa"].str.replace('Cluster', 'Grupa ')
 
-if st.button("✅ Zatwierdź wszystkie grupy"):
-    df = pd.DataFrame(st.session_state.target_groups)
-    st.success("Grupy docelowe zostały zapisane!")
-    st.subheader("📋 Twoje grupy docelowe")
-    st.dataframe(df)
+        st.subheader("📁 Dane użytkownika z przypisanymi klastrami")
+        st.dataframe(clustered_df)
+
+        st.subheader("📈 Wizualizacja klastrów")
+        plot_model(model, plot='cluster', display_format='streamlit')
+
+    except Exception as e:
+        st.error(f"Błąd podczas treningu modelu klastrującego: {e}")
