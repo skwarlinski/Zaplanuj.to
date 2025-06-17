@@ -60,44 +60,86 @@ selected = option_menu(
 # ---MAIN PAGE---
 if selected == "Główna":
     
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 1], gap="small", vertical_alignment="center")
     
     with col1:
-        st.header("🚶‍♂️ Zaplanuj.to - Generator kampanii marketingowych")
         st.markdown("""
-        Witaj w Zaplanuj.to! To narzędzie pomoże Ci w tworzeniu i zarządzaniu kampaniami reklamowymi.
-        Wybierz opcję "Generator" z menu, aby rozpocząć. Wprowadź dane swojej kampanii, a ja zajmę się resztą. W razie problemów zapraszam do zakładki "Kontakt", gdzie znajdziesz informacje, jak się ze mną skontaktować.
-        """)
+        <div style="
+            background-color: rgba(255, 255, 255, 0.02); 
+            border-radius: 10px; 
+            padding: 30px; 
+            margin: auto;
+            width: 90%;
+            max-width: 600px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        ">
+            <h2 style="margin-bottom: 10px;">🚶‍♂️ Zaplanuj.to – Generator kampanii marketingowych</h2>
+            <p>Witaj w Zaplanuj.to! To narzędzie pomoże Ci w tworzeniu i zarządzaniu kampaniami reklamowymi.</p>
+            <p>Wybierz opcję <strong>„Generator”</strong> z menu, aby rozpocząć. Wprowadź dane swojej kampanii, a ja zajmę się resztą.</p>
+            <p>W razie problemów zapraszam do zakładki <strong>„Kontakt”</strong>, gdzie znajdziesz informacje, jak się ze mną skontaktować.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
     
     with col2:
-        st_lottie(lottie_a1, speed=1, width=370, height=370, key=None, quality="medium", loop=True, reverse=False)
+        st_lottie(lottie_a1, speed=1, width=1000, height=500, key=None, quality="medium", loop=True, reverse=False)
     
     st.markdown("""---""")
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 1], gap="small", vertical_alignment="center")
 
     with col1:
-        st_lottie(lottie_a2, speed=1, width=370, height=370, key=None, quality="medium", loop=False, reverse=False)
+        st_lottie(lottie_a2, speed=1, width=1000, height=500, key=None, quality="medium", loop=False, reverse=False)
 
     with col2:
-        st.header("❓ Jak działa generator?")
-        st.markdown("Wystarczy, że wprowadzisz dane swojej kampanii, a ja zajmę się resztą. Możesz przesłać plik CSV lub wkleić dane ręcznie. Następnie wybierz liczbę grup docelowych, a ja wytrenuję model klastrowania i przypiszę użytkowników do odpowiednich grup. Na koniec zobaczysz wizualizację klastrów.")
+        st.markdown("""
+        <div style="
+            background-color: rgba(255, 255, 255, 0.02); 
+            border-radius: 10px; 
+            padding: 30px; 
+            margin: auto;
+            width: 90%;
+            max-width: 600px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        ">
+            <h2 style="margin-bottom: 10px;">❓ Jak działa generator?</h2>
+            <p>Wystarczy, że wprowadzisz dane swojej kampanii, a ja zajmę się resztą. Możesz przesłać plik CSV lub wkleić dane ręcznie.</p>
+            <p>Następnie wybierz liczbę grup docelowych, a ja wytrenuję model klastrowania i przypiszę użytkowników do odpowiednich grup.</p>
+            <p>Na koniec zobaczysz wizualizację klastrów.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
 
     st.markdown("""---""")
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 1], gap="small", vertical_alignment="center")
 
     with col1:
-        st.header("🧠 Co dzieje się pod maską?")
         st.markdown("""
-        Używam algorytmów uczenia maszynowego (takich jak K-means), aby:
-        - analizować dane użytkowników,
-        - znaleźć wzorce w ich zachowaniach lub cechach,
-        - pogrupować ich w segmenty, do których dopasujemy działania marketingowe.
-        """)
+        <div style="
+            background-color: rgba(255, 255, 255, 0.02); 
+            border-radius: 10px; 
+            padding: 30px; 
+            margin: auto;
+            width: 90%;
+            max-width: 600px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        ">
+            <h2 style="margin-bottom: 10px;">🧠 Co dzieje się pod maską?</h2>
+            <p>Używam algorytmów uczenia maszynowego (takich jak K-means), aby:</p>
+            <ul>
+                <li>analizować dane użytkowników,</li>
+                <li>znaleźć wzorce w ich zachowaniach lub cechach,</li>
+                <li>pogrupować ich w segmenty, do których dopasujemy działania marketingowe.</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
-        st_lottie(lottie_a3, speed=100, width=420, height=420, key=None, quality="medium", loop=True, reverse=False)
+        st_lottie(lottie_a3, speed=100, width=1000, height=500, key=None, quality="medium", loop=True, reverse=False)
 
 
 
@@ -275,16 +317,29 @@ if selected == "Kontakt":
 
     local_css("style/style.css")
     
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, gap="small", vertical_alignment="center", )
 
     with col1:
-        st_lottie(lottie_a5, speed=1, width=470, height=270, key=None, quality="medium", loop=True, reverse=False)
+        st_lottie(lottie_a5, speed=1, width=700, height=400, key=None, quality="medium", loop=True, reverse=False,)
 
     with col2:
-        st.header("👋 O mnie")
-        st.markdown("Nazywam się Hubert Skwarliński i tworzę aplikacje z wykorzystaniem Python/Streamlit. Interesuję się analizą danych, machine learningiem i automatyzacją zadań. Z chęcią podejmę współpracę lub odpowiem na pytania!")
+        st.markdown("""
+        <div style="
+            background-color: rgba(255, 255, 255, 0.02); 
+            border-radius: 10px; 
+            padding: 30px; 
+            margin: auto;
+            width: 90%;
+            max-width: 600px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        ">
+            <h2 style="margin-bottom: 10px;">👋 O mnie</h2>
+            <p>Nazywam się Hubert Skwarliński i tworzę aplikacje z wykorzystaniem Python/Streamlit. Interesuję się analizą danych, machine learningiem i automatyzacją zadań. Z chęcią podejmę współpracę lub odpowiem na pytania!</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    col1, col2, col3, col4, col5, col6 = st.columns(6, gap="small", vertical_alignment="center")
 
     with col4:
         st.markdown("""
@@ -315,12 +370,27 @@ if selected == "Kontakt":
     st.markdown("""---""")
         
     
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, gap="small", vertical_alignment="center")
     
     with col1:
-        st.header("📬 Kontakt")
-        st.markdown("Jeśli masz pytania lub potrzebujesz pomocy, skontaktuj się ze mną:")
+        st.markdown("""
+        <div style="
+            background-color: rgba(255, 255, 255, 0.02); 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin: 0px;
+            width: 100%;
+            max-width: 400px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        ">
+            <h2 style="margin-bottom: 10px;">📬 Kontakt</h2>
+            <p>Jeśli masz pytania lub potrzebujesz pomocy, <br>skontaktuj się ze mną:</p>
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown(contact_form, unsafe_allow_html=True)
+
+
 
     with col2:
         st_lottie(lottie_a4, speed=1, width=400, height=400, key=None, quality="medium", loop=False, reverse=False)
