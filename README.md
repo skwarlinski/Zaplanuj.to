@@ -56,9 +56,9 @@ streamlit run app.py
 
 Masz pytania lub sugestie? Odezwij się!
 
-- 💼 [LinkedIn](https://www.linkedin.com/in/twoj-linkedin/)
-- 💻 [GitHub](https://github.com/twoj-login)
-- ✉️ Email: [kontakt@zaplanuj.to](mailto:kontakt@zaplanuj.to)
+- 💼 [LinkedIn](https://www.linkedin.com/in/hubert-skwarlinski-895437368/)
+- 💻 [GitHub](https://github.com/skwarlinski)
+- ✉️ Email: [kontakt@zaplanuj.to](mailto:skwarlinskihubert@gmail.com)
 
 ---
 
