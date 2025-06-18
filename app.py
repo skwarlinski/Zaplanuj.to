@@ -179,6 +179,13 @@ if selected == "Generator":
     st.sidebar.subheader("2. Dodaj grupy docelowe")
     num_groups = st.sidebar.number_input(" Ile grup docelowych chcesz dodać?", min_value=2, max_value=20, step=1)
 
+    st.sidebar.subheader("3. Cel kampanii reklamowej")
+    campain_goal = st.sidebar.text_area(
+        "Wprowadź główny cel kampanii:",
+        height=100,
+        placeholder="Np. zwiększenie świadomości marki, pozyskanie nowych klientów, zwiększenie sprzedaży produktu..."
+    )
+
     # CLUSTERING MODEL TRAINING
     col1, col2 = st.columns(2, gap="small", vertical_alignment="center")
     
