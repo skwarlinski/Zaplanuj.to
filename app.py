@@ -194,111 +194,151 @@ if selected == "Generator":
             with st.expander("Twoje dane", icon="📄"):
                 st.dataframe(df)
 
-    bar = st.sidebar
-    if bar.button("Generuj kampanie", type="primary"):
-        if df is not None and num_groups:
-            try:
-                with st.sidebar:
-                    with st.spinner(f"Trenuję model z {num_groups} grupami..."):
-                        time.sleep(3)
+    if df is not None and num_groups:
+        with st.sidebar:
+            with st.spinner(f"Trenuję model z {num_groups} grupami..."):
+                time.sleep(3)
 
-                setup(
-                    data=df,
-                    normalize=True,
-                    verbose=False,
-                    session_id=42
-                )
+        setup(
+            data=df,
+            normalize=True,
+            verbose=False,
+            session_id=42
+        )
 
-                model = create_model('kmeans', num_clusters=num_groups)
-                clustered_df = assign_model(model)
+        model = create_model('kmeans', num_clusters=num_groups)
+        clustered_df = assign_model(model)
 
-                    
-                clustered_df = clustered_df.rename(columns={'Cluster': 'Grupa docelowa'})
-                clustered_df["Grupa docelowa"] = clustered_df["Grupa docelowa"].str.replace('Cluster', 'Grupa ')
-
-                with col2:
-                    with st.expander("Twoje dane z przypisanymi grupami", icon="📁"):
-                        st.dataframe(clustered_df)
-
-                with st.sidebar:
-                    with st.spinner("Generuję wizualizację grup docelowych..."):
-                        time.sleep(3)
-
-                col1, col2 = st.columns(2, gap="small", vertical_alignment="center")
-
-                with col1:
-                    with st.expander("Wizualizacja grup docelowych", icon="📈"):
-                        plot_model(model, plot='cluster', display_format='streamlit')
-
-                with st.sidebar:
-                    with st.spinner("Generuję wykres rozkładu grup docelowych..."):
-                        time.sleep(3)
-
-                with col2:
-                    with st.expander("Wizualizacja rozkładu grup docelowych", icon="📊"):
-                        plt.figure(figsize=(10, 6))
-                        clustered_df['Grupa docelowa'].value_counts().plot(kind='bar', color='skyblue')
-                        plt.title('Liczba użytkowników w poszczególnych grupach docelowych')
-                        plt.xlabel('Grupa docelowa')
-                        plt.ylabel('Liczba użytkowników')
-                        st.pyplot(plt)
-
-                # GROUP DESCRIPTIONS (TEXT-TO-TEXT)
-                env = dotenv_values(".env")
-                openai_client = OpenAI(api_key=env["openai_api_key"])
-                if not openai_client.api_key:
-                    st.error("Nie znaleziono klucza API OpenAI.")
-                    st.stop()
-                def generate_group_descriptions(group_df, nr_group):
-                    description_stat = group_df.describe(include='all').to_string()
-                    prompt = f"""
-                Jesteś specjalistą ds. marketingu. Oto dane statystyczne użytkowników z grupy {nr_group}:
-                {description_stat}
-
-                Na podstawie tych danych:
-                1. Wymyśl nazwę tej grupy (króka, chwytliwa, marketingowa).
-                2. Napisz krótki opis (2-3 zdania), czym się ta grupa charakteryzuje.
-                    
-                Zwróć odpowiedź w formacie:
-                NAZWA: ...
-                OPIS: ...
-                    """
-                        
-                    try:
-                        response = openai_client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            temperature=0,
-                            messages=[{"role": "user", "content": prompt}]
-                        )
-                        return response.choices[0].message.content.strip()
-                    except Exception as e:
-                        st.error(f"Błąd generowania opisu: {e}")
-
-                st.subheader("📝 Propozycja nazw i opisów grup docelowych")
-
-                for group in sorted(clustered_df["Grupa docelowa"].unique()):
-                    group_df = clustered_df[clustered_df["Grupa docelowa"] == group].drop(columns=["Grupa docelowa"])
-                    
-                    with st.sidebar:
-                        with st.spinner(f"Generuję nazwę i opis dla {group}..."):
-                            time.sleep(2)
-                    text = generate_group_descriptions(group_df, group)
-
-                    if "OPIS" in text:
-                        name_part, description_part = text.split("OPIS:", 1)
-                        name = name_part.replace("NAZWA:", "").strip()
-                        description = description_part.strip()
-                    else:
-                        name = ""
-                        description = text.strip()
-                                
-                    with st.expander(f"{group}", icon="👥"):    
-                        name = st.text_input("Nazwa:", value=name, key=f"name_{group}")
-                        description = st.text_area("Opis:", value=description, height=150, key=f"description_{group}")
                 
-            except Exception as e:
-                st.error(f"Błąd podczas treningu modelu: {e}")
+        clustered_df = clustered_df.rename(columns={'Cluster': 'Grupa docelowa'})
+        clustered_df["Grupa docelowa"] = clustered_df["Grupa docelowa"].str.replace('Cluster', 'Grupa ')
 
+        with col2:
+            with st.expander("Twoje dane z przypisanymi grupami", icon="📁"):
+                st.dataframe(clustered_df)
+
+        with st.sidebar:
+            with st.spinner("Generuję wizualizację grup docelowych..."):
+                time.sleep(3)
+
+        col1, col2 = st.columns(2, gap="small", vertical_alignment="center")
+
+        with col1:
+            with st.expander("Wizualizacja grup docelowych", icon="📈"):
+                plot_model(model, plot='cluster', display_format='streamlit')
+
+        with st.sidebar:
+            with st.spinner("Generuję wykres rozkładu grup docelowych..."):
+                time.sleep(3)
+
+        with col2:
+            with st.expander("Wizualizacja rozkładu grup docelowych", icon="📊"):
+                plt.figure(figsize=(10, 6))
+                clustered_df['Grupa docelowa'].value_counts().plot(kind='bar', color='skyblue')
+                plt.title('Liczba użytkowników w poszczególnych grupach docelowych')
+                plt.xlabel('Grupa docelowa')
+                plt.ylabel('Liczba użytkowników')
+                st.pyplot(plt)
+
+    # (TEXT-TO-TEXT)
+    bar = st.sidebar
+    if df is not None and num_groups and campain_goal:
+        if bar.button("Generuj treści reklamowe", type="primary"):
+            env = dotenv_values(".env")
+            openai_client = OpenAI(api_key=env["openai_api_key"])
+            if not openai_client.api_key:
+                st.error("Nie znaleziono klucza API OpenAI.")
+                st.stop()
+            # GROUP NAMES & DESCRIPTIONS
+            def generate_group_descriptions(group_df, nr_group):
+                description_stat = group_df.describe(include='all').to_string()
+                prompt = f"""
+            Jesteś specjalistą ds. marketingu. Oto dane statystyczne użytkowników z grupy {nr_group}:
+            {description_stat}
+
+            Na podstawie tych danych:
+            1. Wymyśl nazwę tej grupy (króka, chwytliwa, marketingowa).
+            2. Napisz krótki opis (2-3 zdania), czym się ta grupa charakteryzuje.
+                    
+            Zwróć odpowiedź w formacie:
+            NAZWA: ...
+            OPIS: ...
+                """
+                        
+                try:
+                    response = openai_client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        temperature=0,
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+                    return response.choices[0].message.content.strip()
+                except Exception as e:
+                    st.error(f"Błąd generowania nazw i opisów: {e}")
+
+            st.subheader("📝 Propozycja nazw i opisów grup docelowych")
+
+            for group in sorted(clustered_df["Grupa docelowa"].unique()):
+                group_df = clustered_df[clustered_df["Grupa docelowa"] == group].drop(columns=["Grupa docelowa"])
+                    
+                with st.sidebar:
+                    with st.spinner(f"Generuję nazwę i opis dla {group}..."):
+                        time.sleep(2)
+                text = generate_group_descriptions(group_df, group)
+
+                if "OPIS" in text:
+                    name_part, description_part = text.split("OPIS:", 1)
+                    name = name_part.replace("NAZWA:", "").strip()
+                    description = description_part.strip()
+                else:
+                    name = ""
+                    description = text.strip()
+                                
+                with st.expander(f"{group}", icon="👥"):    
+                    name = st.text_input("Nazwa:", value=name, key=f"name_{group}")
+                    description = st.text_area("Opis:", value=description, height=150, key=f"description_{group}")
+            
+            # CAMPAIGN GENERATOR
+            st.subheader("📢 Propozycje kampanii reklamowych dla grup docelowych")
+
+            for group in sorted(clustered_df["Grupa docelowa"].unique()):
+                group_df = clustered_df[clustered_df["Grupa docelowa"] == group].drop(columns=["Grupa docelowa"])
+                name = st.session_state.get(f"name_{group}", "")
+                description = st.session_state.get(f"description_{group}", "")
+
+                with bar.spinner(f"Generuję kampanię reklamową dla {group}..."):
+                    time.sleep(2)
+
+                prompt = f"""
+    Jesteś specjalistą ds. marketingu. Twoim zadaniem jest przygotować kampanię reklamową dopasowaną do grupy docelowej.
+
+    Cel kampanii: {campain_goal}
+
+    Grupa docelowa: {group}
+    Nazwa grupy: {name}
+    Opis grupy: {description}
+
+    Przygotuj:
+    1. Slogan reklamowy (krótki, chwytliwy, max 10 słów)
+    2. Treść posta na media społecznościowe (2-3 zdania)
+    3. Propozycję kreacji graficznej (opisz jak mogłaby wyglądać reklama: kolorystyka, motyw, bohater itp.)
+    4. Propozycję medium reklamy (np. Instagram, TikTok, baner, mailing itp.) i uzasadnienie
+
+    Zwróć odpowiedź w przejrzystym formacie z punktami.
+    """
+
+                try:
+                    response = openai_client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        temperature=0,
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+                    campaign = response.choices[0].message.content.strip()
+
+                    with st.expander(f"Kampania reklamowa dla {name} ({group})", expanded=True):
+                        st.markdown(campaign)
+
+                except Exception as e:
+                    st.error(f"Błąd generowania kampanii reklamowej: {e}")
 
 # ---CONTACT PAGE---
 if selected == "Kontakt":
