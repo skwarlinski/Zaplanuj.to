@@ -51,3 +51,17 @@ pip install -r requirements.txt
 
 # 4. Uruchom aplikację
 streamlit run app.py
+```
+## 📬 Kontakt
+
+Masz pytania lub sugestie? Odezwij się!
+
+- 💼 [LinkedIn](https://www.linkedin.com/in/twoj-linkedin/)
+- 💻 [GitHub](https://github.com/twoj-login)
+- ✉️ Email: [kontakt@zaplanuj.to](mailto:kontakt@zaplanuj.to)
+
+---
+
+## 📜 Licencja
+
+Projekt dostępny na licencji **MIT** – możesz używać, kopiować i rozwijać aplikację na własne potrzeby.
