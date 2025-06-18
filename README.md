@@ -4,7 +4,6 @@
 
 ![Streamlit App](https://img.shields.io/badge/built%20with-Streamlit-blue)
 ![OpenAI](https://img.shields.io/badge/powered%20by-GPT--4o-green)
-![License](https://img.shields.io/github/license/skwarlinski/zaplanuj-to)
 
 ---
 
