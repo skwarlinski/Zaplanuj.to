@@ -60,7 +60,7 @@ Masz pytania lub sugestie? Odezwij się!
 
 - 💼 [LinkedIn](https://www.linkedin.com/in/hubert-skwarlinski-895437368/)
 - 💻 [GitHub](https://github.com/skwarlinski)
-- ✉️ Email: [kontakt@zaplanuj.to](mailto:skwarlinskihubert@gmail.com)
+- ✉️ Email: [skwarlinskihubert@gmail.com](mailto:skwarlinskihubert@gmail.com)
 
 ---
 
