@@ -9,9 +9,15 @@ from io import StringIO
 from pycaret.clustering import setup, create_model, assign_model, plot_model
 import matplotlib.pyplot as plt
 import time
+import datetime
 from openai import OpenAI 
 from dotenv import dotenv_values
-import os 
+import os
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import cm
+from reportlab.pdfbase.pdfmetrics import stringWidth
 
 # PAGE CONFIG
 st.set_page_config(
@@ -26,11 +32,11 @@ def load_lottiefile(filepath: str):
     with open(filepath, "r") as f:
         return json.load(f)
 
-lottie_a1 = load_lottiefile("lottie/a1.json")
-lottie_a2 = load_lottiefile("lottie/a2.json")
-lottie_a3 = load_lottiefile("lottie/a3.json")
-lottie_a4 = load_lottiefile("lottie/a4.json")
-lottie_a5 = load_lottiefile("lottie/a5.json")
+lottie_a1 = load_lottiefile("images/a1.json")
+lottie_a2 = load_lottiefile("images/a2.json")
+lottie_a3 = load_lottiefile("images/a3.json")
+lottie_a4 = load_lottiefile("images/a4.json")
+lottie_a5 = load_lottiefile("images/a5.json")
 
 # MENU                          
 selected = option_menu(
@@ -104,9 +110,17 @@ if selected == "Główna":
             border: 1px solid rgba(255, 255, 255, 0.1);
         ">
             <h2 style="margin-bottom: 10px;">❓ Jak działa generator?</h2>
-            <p>Wystarczy, że wprowadzisz dane swojej kampanii, a ja zajmę się resztą. Możesz przesłać plik CSV lub wkleić dane ręcznie.</p>
-            <p>Następnie wybierz liczbę grup docelowych, a ja wytrenuję model klastrowania i przypiszę użytkowników do odpowiednich grup.</p>
-            <p>Na koniec zobaczysz wizualizację klastrów.</p>
+            <p>Krok po kroku:</p>
+            <ol>
+                <li><strong>Wprowadź dane kampanii</strong> – przez przesłanie pliku CSV lub ręczne wklejenie danych.</li>
+                <li><strong>Określ liczbę grup docelowych</strong>, jakie chcesz wygenerować.</li>
+                <li><strong>Podaj cel kampanii reklamowej</strong>, np. zwiększenie sprzedaży lub świadomości marki.</li>
+                <li>Aplikacja <strong>wytrenuje model klastrowania</strong> (K-means), który przypisze użytkowników do segmentów.</li>
+                <li>Model językowy (GPT) <strong>wygeneruje nazwy i opisy grup docelowych</strong>, które możesz edytować.</li>
+                <li>Dla każdej grupy powstanie <strong>spersonalizowana kampania reklamowa</strong> – z hasłem, postem, propozycją grafiki i medium.</li>
+                <li>Każdą kampanię możesz <strong>pobrać jako plik PDF</strong>.</li>
+            </ol>
+            <p>Wszystko w jednym miejscu – szybko, intuicyjnie i z pomocą AI!</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -128,12 +142,15 @@ if selected == "Główna":
             border: 1px solid rgba(255, 255, 255, 0.1);
         ">
             <h2 style="margin-bottom: 10px;">🧠 Co dzieje się pod maską?</h2>
-            <p>Używam algorytmów uczenia maszynowego (takich jak K-means), aby:</p>
+            <p>Aplikacja wykorzystuje algorytmy uczenia maszynowego (np. <strong>K-means</strong>) oraz modele językowe (GPT), aby:</p>
             <ul>
-                <li>analizować dane użytkowników,</li>
-                <li>znaleźć wzorce w ich zachowaniach lub cechach,</li>
-                <li>pogrupować ich w segmenty, do których dopasujemy działania marketingowe.</li>
+                <li><strong>Analizować dane użytkowników</strong> wczytane z pliku CSV lub wprowadzone ręcznie,</li>
+                <li><strong>Identyfikować ukryte wzorce</strong> w cechach lub zachowaniach użytkowników,</li>
+                <li><strong>Tworzyć grupy docelowe</strong> (segmenty) na podstawie podobieństw,</li>
+                <li><strong>Generować nazwy i opisy tych grup</strong> z pomocą AI,</li>
+                <li><strong>Dopasować gotowe kampanie reklamowe</strong> do każdej z grup – w tym slogany, posty, propozycje kreacji i kanałów komunikacji.</li>
             </ul>
+            <p>Cały proces jest zautomatyzowany, ale użytkownik ma możliwość edycji nazw, opisów oraz ponownego wygenerowania kampanii według własnych preferencji.</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -143,7 +160,6 @@ if selected == "Główna":
 
 
 # ---GENERATOR PAGE---
-# FILE UPLOAD OR MANUAL INPUT
 if selected == "Generator":
     
     st.sidebar.subheader("1. Wczytaj dane kampanii")
@@ -175,7 +191,6 @@ if selected == "Generator":
             else:
                 st.warning("Wprowadź dane przed kliknięciem przycisku.")
 
-    # NUM GROUPS INPUT
     st.sidebar.subheader("2. Dodaj grupy docelowe")
     num_groups = st.sidebar.number_input(" Ile grup docelowych chcesz dodać?", min_value=2, max_value=20, step=1)
 
@@ -186,18 +201,13 @@ if selected == "Generator":
         placeholder="Np. zwiększenie świadomości marki, pozyskanie nowych klientów, zwiększenie sprzedaży produktu..."
     )
 
-    # CLUSTERING MODEL TRAINING
-    col1, col2 = st.columns(2, gap="small", vertical_alignment="center")
-    
-    if df is not None:
-        with col1:
-            with st.expander("Twoje dane", icon="📄"):
-                st.dataframe(df)
+    bar = st.sidebar
+    if df is not None and num_groups and campain_goal:
+        if "start_generation" not in st.session_state:
+            st.session_state.start_generation = False
 
-    if df is not None and num_groups:
-        with st.sidebar:
-            with st.spinner(f"Trenuję model z {num_groups} grupami..."):
-                time.sleep(3)
+        if bar.button("Generuj kampanie i opisy", type="primary"):
+            st.session_state.start_generation = True
 
         setup(
             data=df,
@@ -208,137 +218,207 @@ if selected == "Generator":
 
         model = create_model('kmeans', num_clusters=num_groups)
         clustered_df = assign_model(model)
-
-                
         clustered_df = clustered_df.rename(columns={'Cluster': 'Grupa docelowa'})
         clustered_df["Grupa docelowa"] = clustered_df["Grupa docelowa"].str.replace('Cluster', 'Grupa ')
 
-        with col2:
-            with st.expander("Twoje dane z przypisanymi grupami", icon="📁"):
-                st.dataframe(clustered_df)
+        st.subheader("📊 Analiza i wizualizacja klastrów")
 
-        with st.sidebar:
-            with st.spinner("Generuję wizualizację grup docelowych..."):
-                time.sleep(3)
-
-        col1, col2 = st.columns(2, gap="small", vertical_alignment="center")
+        col1, col2 = st.columns(2, gap="small")
 
         with col1:
-            with st.expander("Wizualizacja grup docelowych", icon="📈"):
-                plot_model(model, plot='cluster', display_format='streamlit')
-
-        with st.sidebar:
-            with st.spinner("Generuję wykres rozkładu grup docelowych..."):
-                time.sleep(3)
+            with st.expander("📄 Twoje dane (oryginalne)", expanded=False):
+                st.dataframe(df)
 
         with col2:
-            with st.expander("Wizualizacja rozkładu grup docelowych", icon="📊"):
-                plt.figure(figsize=(10, 6))
-                clustered_df['Grupa docelowa'].value_counts().plot(kind='bar', color='skyblue')
-                plt.title('Liczba użytkowników w poszczególnych grupach docelowych')
+            with st.expander("📁 Dane z przypisanymi grupami", expanded=False):
+                st.dataframe(clustered_df)
+
+        col3, col4 = st.columns(2, gap="small")
+
+        with col3:
+            with st.expander("📈 Wizualizacja grup docelowych", expanded=False):
+                plot_model(model, plot='cluster', display_format='streamlit')
+
+        with col4:
+            with st.expander("📊 Rozkład liczebności grup docelowych", expanded=False):
+                plt.figure(figsize=(8, 5))
+                clustered_df['Grupa docelowa'].value_counts().plot(kind='bar', color='skyblue', edgecolor='black')
+                plt.title('Liczba użytkowników w grupach')
                 plt.xlabel('Grupa docelowa')
                 plt.ylabel('Liczba użytkowników')
+                plt.tight_layout()
                 st.pyplot(plt)
 
-    # (TEXT-TO-TEXT)
-    bar = st.sidebar
-    if df is not None and num_groups and campain_goal:
-        if bar.button("Generuj treści reklamowe", type="primary"):
-            env = dotenv_values(".env")
-            openai_client = OpenAI(api_key=env["openai_api_key"])
-            if not openai_client.api_key:
-                st.error("Nie znaleziono klucza API OpenAI.")
-                st.stop()
-            # GROUP NAMES & DESCRIPTIONS
-            def generate_group_descriptions(group_df, nr_group):
-                description_stat = group_df.describe(include='all').to_string()
-                prompt = f"""
+        def generate_group_descriptions(group_df, nr_group):
+            description_stat = group_df.describe(include='all').to_string()
+            prompt = f"""
             Jesteś specjalistą ds. marketingu. Oto dane statystyczne użytkowników z grupy {nr_group}:
             {description_stat}
 
             Na podstawie tych danych:
-            1. Wymyśl nazwę tej grupy (króka, chwytliwa, marketingowa).
+            1. Wymyśl nazwę tej grupy (krótka, chwytliwa, marketingowa).
             2. Napisz krótki opis (2-3 zdania), czym się ta grupa charakteryzuje.
-                    
+
             Zwróć odpowiedź w formacie:
             NAZWA: ...
             OPIS: ...
-                """
-                        
-                try:
-                    response = openai_client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        temperature=0,
-                        messages=[{"role": "user", "content": prompt}]
-                    )
-                    return response.choices[0].message.content.strip()
-                except Exception as e:
-                    st.error(f"Błąd generowania nazw i opisów: {e}")
+            """
+            response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                temperature=0,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return response.choices[0].message.content.strip()
+        
+        summary_data = []
 
-            st.subheader("📝 Propozycja nazw i opisów grup docelowych")
+        for group in sorted(clustered_df["Grupa docelowa"].unique()):
+            name = st.session_state.get(f"name_{group}", "")
+            description = st.session_state.get(f"description_{group}", "")
+            summary_data.append({
+                "Grupa": group,
+                "Nazwa grupy": name,
+                "Opis grupy": description
+            })
 
-            for group in sorted(clustered_df["Grupa docelowa"].unique()):
-                group_df = clustered_df[clustered_df["Grupa docelowa"] == group].drop(columns=["Grupa docelowa"])
-                    
-                with st.sidebar:
-                    with st.spinner(f"Generuję nazwę i opis dla {group}..."):
-                        time.sleep(2)
-                text = generate_group_descriptions(group_df, group)
+        env = dotenv_values(".env")
+        openai_client = OpenAI(api_key=env["openai_api_key"])
+        
+        def generate_campaign(group, name, description):
+            prompt = f"""
+            Jesteś specjalistą ds. marketingu. Twoim zadaniem jest przygotować kampanię reklamową dopasowaną do grupy docelowej.
 
-                if "OPIS" in text:
-                    name_part, description_part = text.split("OPIS:", 1)
-                    name = name_part.replace("NAZWA:", "").strip()
-                    description = description_part.strip()
-                else:
-                    name = ""
-                    description = text.strip()
+            Cel kampanii: {campain_goal}
+
+            Grupa docelowa: {group}
+            Nazwa grupy: {name}
+            Opis grupy: {description}
+
+            Przygotuj:
+            1. Slogan reklamowy (krótki, chwytliwy, max 10 słów)
+            2. Treść posta na media społecznościowe (2-3 zdania)
+            3. Propozycję kreacji graficznej (opisz jak mogłaby wyglądać reklama: kolorystyka, motyw, bohater itp.)
+            4. Propozycję medium reklamy (np. Instagram, TikTok, baner, mailing itp.) i uzasadnienie
+
+            Zwróć odpowiedź w przejrzystym formacie z punktami.
+            """
+            response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                temperature=0,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return response.choices[0].message.content.strip()
+        
+        if st.session_state.start_generation:
+            st.markdown("### ✏️ Zweryfikuj nazwy i opisy grup docelowych")
+
+            all_groups = sorted(clustered_df["Grupa docelowa"].unique())
                                 
-                with st.expander(f"{group}", icon="👥"):    
-                    name = st.text_input("Nazwa:", value=name, key=f"name_{group}")
-                    description = st.text_area("Opis:", value=description, height=150, key=f"description_{group}")
-            
-            # CAMPAIGN GENERATOR
-            st.subheader("📢 Propozycje kampanii reklamowych dla grup docelowych")
-
-            for group in sorted(clustered_df["Grupa docelowa"].unique()):
+            for group in all_groups:
                 group_df = clustered_df[clustered_df["Grupa docelowa"] == group].drop(columns=["Grupa docelowa"])
-                name = st.session_state.get(f"name_{group}", "")
-                description = st.session_state.get(f"description_{group}", "")
 
-                with bar.spinner(f"Generuję kampanię reklamową dla {group}..."):
-                    time.sleep(2)
+                name_key = f"name_{group}"
+                desc_key = f"description_{group}"
 
-                prompt = f"""
-    Jesteś specjalistą ds. marketingu. Twoim zadaniem jest przygotować kampanię reklamową dopasowaną do grupy docelowej.
+                if name_key not in st.session_state or desc_key not in st.session_state:
+                    with st.spinner (f"Generuję opis dla {group}..."):
+                        text = generate_group_descriptions(group_df, group)
 
-    Cel kampanii: {campain_goal}
+                    if "NAZWA:" in text and "OPIS:" in text:
+                        try:
+                            name_part, description_part = text.split("OPIS:", 1)
+                            name = name_part.split("NAZWA:", 1)[1].strip()
+                            description = description_part.strip()
+                        except Exception:
+                            name, description = f"Grupa {group}", "Opis niedostępny."
+                    else:
+                        name = f"Grupa {group}"
+                        description = text.strip() or "Brak opisu."
 
-    Grupa docelowa: {group}
-    Nazwa grupy: {name}
-    Opis grupy: {description}
+                    st.session_state[name_key] = name
+                    st.session_state[desc_key] = description
 
-    Przygotuj:
-    1. Slogan reklamowy (krótki, chwytliwy, max 10 słów)
-    2. Treść posta na media społecznościowe (2-3 zdania)
-    3. Propozycję kreacji graficznej (opisz jak mogłaby wyglądać reklama: kolorystyka, motyw, bohater itp.)
-    4. Propozycję medium reklamy (np. Instagram, TikTok, baner, mailing itp.) i uzasadnienie
+            if "regenerate_campaigns" not in st.session_state:
+                st.session_state["regenerate_campaigns"] = False
+            
+            for group in all_groups:
+                name_key = f"name_{group}"
+                desc_key = f"description_{group}"
+                campaign_key = f"campaign_{group}"
 
-    Zwróć odpowiedź w przejrzystym formacie z punktami.
-    """
+                with st.expander(f"👥 {group} – Edytuj nazwę i opis", expanded=False):
+                    st.session_state[name_key] = st.text_input("Nazwa grupy:", value=st.session_state[name_key], key=f"edit_name_{group}")
+                    st.session_state[desc_key] = st.text_area("Opis grupy:", value=st.session_state[desc_key], key=f"edit_desc_{group}", height=120)
 
-                try:
-                    response = openai_client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        temperature=0,
-                        messages=[{"role": "user", "content": prompt}]
-                    )
-                    campaign = response.choices[0].message.content.strip()
+            if st.button("💾 Zapisz zmiany", type="secondary"):
+                st.session_state.regenerate_campaigns = True
+                for group in all_groups:
+                    name = st.session_state.get(f"name_{group}", "")
+                    description = st.session_state.get(f"description_{group}", "")
+                    campaign_key = f"campaign_{group}"
 
-                    with st.expander(f"Kampania reklamowa dla {name} ({group})", expanded=True):
-                        st.markdown(campaign)
+                    with st.spinner(f"Generuję kampanię reklamową dla {group}..."):
+                        st.session_state[campaign_key] = generate_campaign(group, name, description)
 
-                except Exception as e:
-                    st.error(f"Błąd generowania kampanii reklamowej: {e}")
+                st.success(" Zaktualizowano kampanie na podstawie nowych nazw i opisów")    
+
+        st.subheader("📢 Kampanie reklamowe")
+
+        for group in sorted(clustered_df["Grupa docelowa"].unique()):
+            name = st.session_state.get(f"name_{group}", "")
+            description = st.session_state.get(f"description_{group}", "")
+            campaign_key = f"campaign_{group}"
+
+            if campaign_key not in st.session_state:
+                with st.spinner(f"Generuję kampanię reklamową dla {group}..."):
+                    st.session_state[campaign_key] = generate_campaign(group, name, description)
+
+            campaign = st.session_state[campaign_key]
+            with st.expander(f"💡 Kampania reklamowa dla {name} ({group})", expanded=True):
+                st.markdown(campaign)
+
+                def export_campaign_to_pdf(title: str, content: str) -> BytesIO:
+                        buffer = BytesIO()
+                        c = canvas.Canvas(buffer, pagesize=A4)
+                        width, height = A4
+                        margin_left = 2 * cm
+                        margin_top = height - 2 * cm
+                        line_height = 14
+                        c.setFont("Helvetica-Bold", 16)
+                        c.drawString(margin_left, margin_top, title)
+                        y = margin_top - 2 * line_height
+                        c.setFont("Helvetica", 12)
+                        max_width = width - 2 * margin_left
+                        lines = []
+                        for paragraph in content.split('\n'):
+                            line = ""
+                            for word in paragraph.split():
+                                test_line = f"{line} {word}".strip()
+                                if stringWidth(test_line, "Helvetica", 12) < max_width:
+                                    line = test_line
+                                else:
+                                    lines.append(line)
+                                    line = word
+                            lines.append(line)
+                        for line in lines:
+                            if y < 2 * cm:
+                                c.showPage()
+                                y = height - 2 * cm
+                                c.setFont("Helvetica", 12)
+                            c.drawString(margin_left, y, line)
+                            y -= line_height
+                        c.save()
+                        buffer.seek(0)
+                        return buffer
+                
+                pdf = export_campaign_to_pdf(f"Kampania reklamowa - {name}", campaign)
+                st.download_button(
+                    label="📥 Pobierz kampanię jako PDF",
+                    data=pdf,
+                    file_name=f"kampania_{name}.pdf",
+                    mime="application/pdf",
+                    key=f"download_pdf_{group}"
+                )
 
 # ---CONTACT PAGE---
 if selected == "Kontakt":
