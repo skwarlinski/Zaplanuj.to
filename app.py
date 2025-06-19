@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import time
 import datetime
 from openai import OpenAI 
-from dotenv import dotenv_values
 import os
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
@@ -38,7 +37,70 @@ lottie_a3 = load_lottiefile("images/a3.json")
 lottie_a4 = load_lottiefile("images/a4.json")
 lottie_a5 = load_lottiefile("images/a5.json")
 
-# MENU                          
+# ---API INPUT---
+def verify_api_key(key: str) -> bool:
+    try:
+        openai_client = OpenAI(api_key=key)
+        openai_client.models.list()
+        return True
+    except Exception:
+        return False
+    
+if "openai_api_key" not in st.session_state:
+    st.session_state["openai_api_key"] = ""
+if "is_admin" not in st.session_state:
+    st.session_state["is_admin"] = False
+
+
+if not st.session_state["openai_api_key"]:
+
+    col1, col2, col3 = st.columns(3)
+    with col2:
+        with st.form("login_form"):
+            user_api_key = st.text_input("🔑 Podaj swój klucz OpenAI API:", type="password")
+            submit_user = st.form_submit_button("Zatwierdź")
+
+            if submit_user:
+                if user_api_key:
+                    if verify_api_key(user_api_key):
+                        st.session_state["openai_api_key"] = user_api_key
+                        st.success("✅ Klucz API poprawny.")
+                        time.sleep(3)
+                        st.rerun()
+                    else:
+                        st.error("❌ Nieprawidłowy klucz API.")
+                else:
+                    st.warning("⚠️ Wprowadź swój klucz API.")
+        
+        with st.expander("🔐 Logowanie administratora"):
+            with st.form("admin_login_form"):
+                admin_user = st.text_input("👤 Login")
+                admin_pass = st.text_input("🔒 Hasło", type="password")
+                submit_admin = st.form_submit_button("Zaloguj")
+
+                if submit_admin:
+                    admin_username = st.secrets["admin"]["username"]
+                    admin_password = st.secrets["admin"]["password"]
+
+                    if admin_user == admin_username and admin_pass == admin_password:
+                        st.session_state["openai_api_key"] = st.secrets["openai_api_key"]
+                        st.session_state["is_admin"] = True
+                        st.success("✅ Zalogowano jako administrator.")
+                        time.sleep(3)
+                        st.rerun()
+                    else:
+                        st.error("❌ Nieprawidłowe dane.")
+        st.stop()
+ 
+# ---MENU---
+def show_user_role():
+    role = "Administrator" if st.session_state.get("is_admin", False) else "Użytkownik"
+    st.markdown(
+        f"<div style='position: absolute; top: 0px; right: 5px; font-size: 11px; color: gray;'>"
+        f"Tryb: {role}</div>",
+        unsafe_allow_html=True
+    )
+
 selected = option_menu(
     menu_title="Zaplanuj.to",
     options=["Główna", "Generator", "Kontakt"],
@@ -64,6 +126,7 @@ selected = option_menu(
 
 # ---MAIN PAGE---
 if selected == "Główna":
+    show_user_role()
     
     col1, col2 = st.columns([1, 1], gap="small", vertical_alignment="center")
     
@@ -161,6 +224,7 @@ if selected == "Główna":
 
 # ---GENERATOR PAGE---
 if selected == "Generator":
+    show_user_role()
     
     st.sidebar.subheader("1. Wczytaj dane kampanii")
     data_source = st.sidebar.radio("Wybierz metodę przesyłania danych:", ["📁 Prześlij plik CSV", "📋 Wklej dane ręcznie"] )
@@ -281,8 +345,7 @@ if selected == "Generator":
                 "Opis grupy": description
             })
 
-        env = dotenv_values(".env")
-        openai_client = OpenAI(api_key=env["openai_api_key"])
+        openai_client = OpenAI(api_key=st.session_state["openai_api_key"])
         
         def generate_campaign(group, name, description):
             prompt = f"""
@@ -422,6 +485,7 @@ if selected == "Generator":
 
 # ---CONTACT PAGE---
 if selected == "Kontakt":
+    show_user_role()
     
     contact_form = """
     <form action="https://formsubmit.co/skwarlinskihubert@gmail.com" method="POST">
