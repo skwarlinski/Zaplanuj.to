@@ -197,7 +197,7 @@ if selected == "Generator":
     st.sidebar.subheader("3. Cel kampanii reklamowej")
     campain_goal = st.sidebar.text_area(
         "Wprowadź główny cel kampanii:",
-        height=100,
+        height=120,
         placeholder="Np. zwiększenie świadomości marki, pozyskanie nowych klientów, zwiększenie sprzedaży produktu..."
     )
 
@@ -521,14 +521,16 @@ if selected == "Kontakt":
     with st.expander("Zależności użyte w projekcie", icon="🧰"):
         st.write("""
         Poniżej znajduje się lista bibliotek i modułów użytych w aplikacji **Zaplanuj.to**, wraz z krótkim opisem ich roli:
-        - **streamlit** – główny framework do budowy interfejsu aplikacji webowej w Pythonie.
-        - **pandas** – do wczytywania i przetwarzania danych z pliku CSV lub z danych wklejonych ręcznie.
-        - **pycaret[clustering]** – do automatycznego tworzenia i trenowania modelu klastrowania (np. KMeans), przypisywania grup i tworzenia wizualizacji.
-        - **matplotlib** – biblioteka do tworzenia wykresów, wykorzystywana przez `pycaret` do generowania wykresu klastrów.
-        - **streamlit-option-menu** – umożliwia tworzenie niestandardowego menu nawigacyjnego (z ikonami i poziomym układem).
-        - **streamlit-lottie** – do odtwarzania animacji `.json` w formacie Lottie, co uatrakcyjnia interfejs.
-        - **json** – do wczytywania plików animacji `.json`.
-        - **requests** – może być używany do pobierania animacji z internetu (niezastosowany w aktualnym kodzie, ale zaimportowany).
-        - **time** – do tworzenia opóźnień i symulacji ładowania (np. podczas wczytywania danych lub trenowania modelu).
-        - **io.StringIO** – konwersja tekstu z pola tekstowego do formatu pliku do odczytu przez pandas.
+        - **streamlit** – framework do budowy interfejsu webowego, umożliwiający szybkie tworzenie aplikacji w Pythonie.
+        - **pandas** – do wczytywania, przetwarzania i analizy danych z plików CSV lub tekstu wprowadzanego ręcznie.
+        - **pycaret[clustering]** – narzędzie do automatycznego trenowania modeli klastrowania (np. K-means), przypisywania grup i generowania wizualizacji.
+        - **matplotlib** – biblioteka do tworzenia wykresów i wizualizacji danych, wykorzystywana głównie do wyświetlania wyników klastrowania.
+        - **streamlit-option-menu** – pozwala na tworzenie estetycznych i intuicyjnych menu nawigacyjnych z ikonami i układem poziomym.
+        - **streamlit-lottie** – do odtwarzania animacji w formacie Lottie, które wzbogacają i uatrakcyjniają interfejs użytkownika.
+        - **json** – do ładowania i przetwarzania plików animacji `.json` w formacie Lottie.
+        - **requests** – biblioteka do wykonywania zapytań HTTP, potencjalnie używana do pobierania zasobów z internetu (aktualnie zaimportowana, ale nieużywana).
+        - **time** – do kontrolowania opóźnień i symulacji ładowania, np. podczas wczytywania danych lub generowania wyników.
+        - **io.StringIO** – umożliwia konwersję wprowadzonego tekstu CSV na format czytelny dla pandas jako plik w pamięci.
+        - **openai** – interfejs do komunikacji z API OpenAI, wykorzystywany do generowania nazw grup, opisów i kampanii reklamowych.
+        - **reportlab** – do tworzenia i eksportu wygenerowanych kampanii reklamowych w formacie PDF.
         """)
