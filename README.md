@@ -40,7 +40,7 @@
 
 ## 🖥️ Demo
 
-> Możesz uruchomić aplikację lokalnie lub na [Streamlit Cloud](https://streamlit.io/cloud).
+> Możesz uruchomić aplikację lokalnie lub na [Streamlit Cloud]([https://streamlit.io/cloud](https://zaplanujto.streamlit.app/)).
 
 ### 🔧 Instalacja lokalna
 
