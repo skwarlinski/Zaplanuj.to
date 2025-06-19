@@ -9,26 +9,33 @@
 
 ## 🚀 Funkcje
 
-🔹 Wczytaj dane klientów z pliku CSV  
+🔹 Wczytaj dane klientów z pliku CSV lub wklej je ręcznie  
 🔹 Zastosuj **klasteryzację (unsupervised learning)** do segmentacji użytkowników  
-🔹 Wygeneruj **komunikaty reklamowe dopasowane do każdego segmentu** (grupy docelowej)  
-🔹 Edytuj nazwy i opisy grup według własnego uznania  
-🔹 Pobierz wyniki jako plik CSV  
-🔹 Nowoczesny, responsywny interfejs z animacjami Lottie  
-🔹 Wbudowany formularz kontaktowy i portfolio autora
+🔹 Wygeneruj **nazwy i opisy grup docelowych** na podstawie danych  
+🔹 Wygeneruj **kampanie reklamowe** dopasowane do każdej grupy (slogan, post, kreacja, kanał)  
+🔹 Edytuj wygenerowane **nazwy i opisy** grup według własnego uznania  
+🔹 Pobierz każdą kampanię jako **plik PDF**  
+🔹 Zobacz **wizualizację grup docelowych** i rozkład liczebności  
+🔹 Nowoczesny, responsywny interfejs z **animacjami Lottie**  
+🔹 Wbudowany formularz kontaktowy i sekcja portfolio autora
 
 ---
 
 ## 🧠 Technologie
 
 | Narzędzie | Zastosowanie |
-|--|--|
-| `Streamlit` | Interfejs webowy |
-| `PyCaret` | Klasteryzacja danych |
-| `OpenAI API (GPT-4o)` | Generowanie opisów i komunikatów |
-| `Pandas / scikit-learn` | Analiza i transformacja danych |
-| `dotenv` | Przechowywanie klucza API |
-| `Lottie` | Animacje UI |
+|----------|--------------|
+| `Streamlit` | Interfejs webowy aplikacji |
+| `PyCaret` | Klasteryzacja danych (np. K-means), analiza, wizualizacja |
+| `OpenAI API (GPT-4o)` | Generowanie nazw grup, opisów i kampanii |
+| `Pandas` | Wczytywanie i przetwarzanie danych tabelarycznych |
+| `matplotlib` | Wizualizacja wyników klastrowania |
+| `reportlab` | Eksport kampanii reklamowych do formatu PDF |
+| `dotenv` | Bezpieczne przechowywanie klucza API |
+| `Lottie` | Animacje UI w formacie JSON |
+| `streamlit-option-menu` | Nawigacja aplikacji z ikonami |
+| `streamlit-lottie` | Obsługa animacji Lottie w Streamlit |
+| `time / io / json` | Pomocnicze funkcje do ładowania, przetwarzania i opóźnień |
 
 ---
 
