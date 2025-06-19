@@ -31,7 +31,6 @@
 | `Pandas` | Wczytywanie i przetwarzanie danych tabelarycznych |
 | `matplotlib` | Wizualizacja wyników klastrowania |
 | `reportlab` | Eksport kampanii reklamowych do formatu PDF |
-| `dotenv` | Bezpieczne przechowywanie klucza API |
 | `Lottie` | Animacje UI w formacie JSON |
 | `streamlit-option-menu` | Nawigacja aplikacji z ikonami |
 | `streamlit-lottie` | Obsługa animacji Lottie w Streamlit |
