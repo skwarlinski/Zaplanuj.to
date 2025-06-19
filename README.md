@@ -52,9 +52,7 @@ cd zaplanuj-to
 # 2. Zainstaluj zależności
 pip install -r requirements.txt
 
-# 3. Ustaw klucz OpenAI w pliku .env
-
-# 4. Uruchom aplikację
+# 3. Uruchom aplikację
 streamlit run app.py
 ```
 ---
