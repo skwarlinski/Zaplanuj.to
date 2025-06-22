@@ -487,21 +487,6 @@ if selected == "Generator":
 if selected == "Kontakt":
     show_user_role()
     
-    contact_form = """
-    <form action="https://formsubmit.co/skwarlinskihubert@gmail.com" method="POST">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="text" name="name" placeholder="Imię" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <textarea name="message" placeholder="Wiadomość" required></textarea>
-        <button type="submit">Send</button>
-    </form>"""
-
-    def local_css(file_name):
-        with open(file_name) as f:
-            st.markdown(f"<style>{f.read()}<style>", unsafe_allow_html=True)
-
-    local_css("style/style.css")
-    
     col1, col2 = st.columns(2, gap="small", vertical_alignment="center", )
 
     with col1:
@@ -557,23 +542,27 @@ if selected == "Kontakt":
     
     col1, col2 = st.columns(2, gap="small", vertical_alignment="center")
     
-    with col1:
-        st.markdown("""
-        <div style="
-            background-color: rgba(255, 255, 255, 0.02); 
-            border-radius: 10px; 
-            padding: 20px; 
-            margin: 0px;
-            width: 100%;
-            max-width: 400px;
-            text-align: left;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        ">
-            <h2 style="margin-bottom: 10px;">📬 Kontakt</h2>
-            <p>Jeśli masz pytania lub potrzebujesz pomocy, <br>skontaktuj się ze mną:</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown(contact_form, unsafe_allow_html=True)
+    with col1:   
+        google_form_url = "https://docs.google.com/forms/d/e/1FAIpQLSd93aIMbCN1nk49Wx4ccbxsAc1jctElw_ZoFNso8_kBZx7w8Q/viewform?embedded=true"
+
+        st.markdown(
+            f"""
+            <div style="
+                margin-top: 15px;
+                width: 100%;
+                max-width: 400px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            ">
+                <iframe src="{google_form_url}" width="100%" height="520px" frameborder="0" style="border:0;" allowfullscreen>
+                    Ładowanie…
+                </iframe>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 
 
