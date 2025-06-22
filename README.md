@@ -40,7 +40,7 @@
 
 ## 🖥️ Demo
 
-> Możesz uruchomić aplikację lokalnie lub na [Streamlit Cloud](https://streamlit.io/cloud).
+> Możesz uruchomić aplikację lokalnie lub na [Streamlit Cloud](https://zaplanujto.streamlit.app/).
 
 ### 🔧 Instalacja lokalna
 
@@ -52,9 +52,7 @@ cd zaplanuj-to
 # 2. Zainstaluj zależności
 pip install -r requirements.txt
 
-# 3. Ustaw klucz OpenAI w pliku .env
-
-# 4. Uruchom aplikację
+# 3. Uruchom aplikację
 streamlit run app.py
 ```
 ---
