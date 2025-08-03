@@ -17,6 +17,10 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import platform
+import re
 
 # PAGE CONFIG
 st.set_page_config(
@@ -441,38 +445,196 @@ if selected == "Generator":
                 st.markdown(campaign)
 
                 def export_campaign_to_pdf(title: str, content: str) -> BytesIO:
-                        buffer = BytesIO()
-                        c = canvas.Canvas(buffer, pagesize=A4)
-                        width, height = A4
-                        margin_left = 2 * cm
-                        margin_top = height - 2 * cm
-                        line_height = 14
-                        c.setFont("Helvetica-Bold", 16)
-                        c.drawString(margin_left, margin_top, title)
-                        y = margin_top - 2 * line_height
-                        c.setFont("Helvetica", 12)
-                        max_width = width - 2 * margin_left
+                    import re
+                    
+                    buffer = BytesIO()
+                    c = canvas.Canvas(buffer, pagesize=A4)
+                    width, height = A4
+                    margin_left = 2 * cm
+                    margin_top = height - 2 * cm
+                    line_height = 16
+                    
+                    # Rejestracja fontów z obsługą polskich znaków
+                    font_name = 'Helvetica'
+                    font_bold = 'Helvetica-Bold'
+                    
+                    try:
+                        system = platform.system()
+                        font_registered = False
+                        
+                        font_paths = []
+                        if system == "Windows":
+                            font_paths = [
+                                ("C:/Windows/Fonts/arial.ttf", "C:/Windows/Fonts/arialbd.ttf"),
+                                ("C:/Windows/Fonts/calibri.ttf", "C:/Windows/Fonts/calibrib.ttf"),
+                                ("C:/Windows/Fonts/tahoma.ttf", "C:/Windows/Fonts/tahomabd.ttf")
+                            ]
+                        elif system == "Darwin":  # macOS
+                            font_paths = [
+                                ("/System/Library/Fonts/Arial.ttf", "/System/Library/Fonts/Arial Bold.ttf"),
+                            ]
+                        else:  # Linux
+                            font_paths = [
+                                ("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 
+                                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"),
+                                ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 
+                                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
+                            ]
+                        
+                        for regular_path, bold_path in font_paths:
+                            if os.path.exists(regular_path):
+                                try:
+                                    pdfmetrics.registerFont(TTFont('CustomFont', regular_path))
+                                    font_name = 'CustomFont'
+                                    if os.path.exists(bold_path):
+                                        pdfmetrics.registerFont(TTFont('CustomFont-Bold', bold_path))
+                                        font_bold = 'CustomFont-Bold'
+                                    else:
+                                        font_bold = 'CustomFont'
+                                    font_registered = True
+                                    break
+                                except:
+                                    continue
+                    except:
+                        pass
+                    
+                    def clean_text(text):
+                        """Zamień polskie znaki na bezpieczne w razie problemów"""
+                        replacements = {
+                            'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n', 'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+                            'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N', 'Ó': 'O', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z'
+                        }
+                        for old, new in replacements.items():
+                            text = text.replace(old, new)
+                        return text
+                    
+                    def parse_markdown_line(line):
+                        """Parsuje pojedynczą linię Markdown i zwraca informacje o formatowaniu"""
+                        original_line = line
+                        
+                        # Nagłówki
+                        if line.startswith('####'):
+                            return {'text': line[4:].strip(), 'type': 'header4', 'font': font_bold, 'size': 12}
+                        elif line.startswith('###'):
+                            return {'text': line[3:].strip(), 'type': 'header3', 'font': font_bold, 'size': 14}
+                        elif line.startswith('##'):
+                            return {'text': line[2:].strip(), 'type': 'header2', 'font': font_bold, 'size': 16}
+                        elif line.startswith('#'):
+                            return {'text': line[1:].strip(), 'type': 'header1', 'font': font_bold, 'size': 18}
+                        
+                        # Listy numerowane
+                        elif re.match(r'^\d+\.', line.strip()):
+                            text = re.sub(r'^\d+\.\s*', '', line.strip())
+                            return {'text': f"• {text}", 'type': 'list', 'font': font_name, 'size': 11}
+                        
+                        # Listy punktowane
+                        elif line.strip().startswith('-') or line.strip().startswith('*'):
+                            text = line.strip()[1:].strip()
+                            return {'text': f"• {text}", 'type': 'list', 'font': font_name, 'size': 11}
+                        
+                        # Tekst pogrubiony **text**
+                        elif '**' in line:
+                            # Usuń gwiazdki i oznacz jako pogrubiony
+                            text = re.sub(r'\*\*(.*?)\*\*', r'\1', line)
+                            return {'text': text, 'type': 'bold', 'font': font_bold, 'size': 11}
+                        
+                        # Zwykły tekst
+                        else:
+                            return {'text': line, 'type': 'normal', 'font': font_name, 'size': 11}
+                    
+                    def draw_text_safely(canvas, x, y, text, font, size):
+                        """Rysuje tekst z obsługą błędów kodowania"""
+                        try:
+                            canvas.setFont(font, size)
+                            canvas.drawString(x, y, text)
+                            return True
+                        except:
+                            try:
+                                canvas.setFont('Helvetica-Bold' if 'Bold' in font else 'Helvetica', size)
+                                canvas.drawString(x, y, clean_text(text))
+                                return True
+                            except:
+                                return False
+                    
+                    def wrap_text(text, font, size, max_width):
+                        """Łamie tekst na linie dopasowane do szerokości"""
+                        words = text.split()
                         lines = []
-                        for paragraph in content.split('\n'):
-                            line = ""
-                            for word in paragraph.split():
-                                test_line = f"{line} {word}".strip()
-                                if stringWidth(test_line, "Helvetica", 12) < max_width:
-                                    line = test_line
-                                else:
-                                    lines.append(line)
-                                    line = word
-                            lines.append(line)
-                        for line in lines:
+                        current_line = ""
+                        
+                        for word in words:
+                            test_line = f"{current_line} {word}".strip()
+                            try:
+                                test_width = stringWidth(test_line, font, size)
+                            except:
+                                test_width = len(test_line) * (size * 0.6)  # Przybliżone
+                            
+                            if test_width <= max_width:
+                                current_line = test_line
+                            else:
+                                if current_line:
+                                    lines.append(current_line)
+                                current_line = word
+                        
+                        if current_line:
+                            lines.append(current_line)
+                        
+                        return lines
+                    
+                    # Tytuł dokumentu
+                    try:
+                        c.setFont(font_bold, 20)
+                        c.drawString(margin_left, margin_top, title)
+                    except:
+                        c.setFont('Helvetica-Bold', 20)
+                        c.drawString(margin_left, margin_top, clean_text(title))
+                    
+                    y = margin_top - 40
+                    max_width = width - 2 * margin_left
+                    
+                    # Przetwarzanie treści
+                    lines = content.split('\n')
+                    
+                    for line in lines:
+                        line = line.strip()
+                        
+                        if not line:  # Pusta linia
+                            y -= line_height * 0.5
+                            continue
+                        
+                        # Parsuj linię
+                        parsed = parse_markdown_line(line)
+                        
+                        # Sprawdź czy trzeba przejść na nową stronę
+                        if y < 3 * cm:
+                            c.showPage()
+                            y = height - 2 * cm
+                        
+                        # Dodatkowy odstęp przed nagłówkami
+                        if parsed['type'].startswith('header'):
+                            y -= 5
+                        
+                        # Zawijanie tekstu dla długich linii
+                        wrapped_lines = wrap_text(parsed['text'], parsed['font'], parsed['size'], max_width)
+                        
+                        for wrapped_line in wrapped_lines:
                             if y < 2 * cm:
                                 c.showPage()
                                 y = height - 2 * cm
-                                c.setFont("Helvetica", 12)
-                            c.drawString(margin_left, y, line)
+                            
+                            # Wcięcie dla list
+                            x_pos = margin_left + (15 if parsed['type'] == 'list' else 0)
+                            
+                            draw_text_safely(c, x_pos, y, wrapped_line, parsed['font'], parsed['size'])
                             y -= line_height
-                        c.save()
-                        buffer.seek(0)
-                        return buffer
+                        
+                        # Dodatkowy odstęp po nagłówkach
+                        if parsed['type'].startswith('header'):
+                            y -= 5
+                    
+                    c.save()
+                    buffer.seek(0)
+                    return buffer
                 
                 pdf = export_campaign_to_pdf(f"Kampania reklamowa - {name}", campaign)
                 st.download_button(
