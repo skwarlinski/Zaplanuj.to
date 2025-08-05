@@ -22,6 +22,23 @@ from reportlab.pdfbase.ttfonts import TTFont
 import platform
 import re
 
+# LOTTIE ANIMATIONS - funkcja do responsywnych animacji
+def display_lottie_responsive(lottie_animation, key_suffix="", speed=1, quality="medium", loop=True, reverse=False, height_ratio=0.4):
+    """
+    Wyświetla animację Lottie w sposób responsywny
+    height_ratio: stosunek wysokości do szerokości (domyślnie 0.4 = 40% szerokości)
+    """
+    st_lottie(
+        lottie_animation, 
+        speed=speed, 
+        width=None,  # None oznacza auto-width (100% kontenera)
+        height=400,  # Stała wysokość, ale można dostosować
+        key=key_suffix, 
+        quality=quality, 
+        loop=loop, 
+        reverse=reverse
+    )
+
 # PAGE CONFIG
 st.set_page_config(
     page_title="Zaplanuj.to",
@@ -155,14 +172,14 @@ if selected == "Główna":
 
     
     with col2:
-        st_lottie(lottie_a1, speed=1, width=1000, height=500, key=None, quality="medium", loop=True, reverse=False)
+        display_lottie_responsive(lottie_a1, key_suffix="main_1", speed=1, height_ratio=0.5)
     
     st.markdown("""---""")
 
     col1, col2 = st.columns([1, 1], gap="small", vertical_alignment="center")
 
     with col1:
-        st_lottie(lottie_a2, speed=1, width=1000, height=500, key=None, quality="medium", loop=False, reverse=False)
+        display_lottie_responsive(lottie_a2, key_suffix="main_2", speed=1, loop=False, height_ratio=0.5)
 
     with col2:
         st.markdown("""
@@ -222,7 +239,7 @@ if selected == "Główna":
         """, unsafe_allow_html=True)
     
     with col2:
-        st_lottie(lottie_a3, speed=100, width=1000, height=500, key=None, quality="medium", loop=True, reverse=False)
+        display_lottie_responsive(lottie_a3, key_suffix="main_3", speed=100, height_ratio=0.5)
 
 
 
@@ -652,7 +669,7 @@ if selected == "Kontakt":
     col1, col2 = st.columns(2, gap="small", vertical_alignment="center", )
 
     with col1:
-        st_lottie(lottie_a5, speed=1, width=700, height=400, key=None, quality="medium", loop=True, reverse=False,)
+        display_lottie_responsive(lottie_a5, key_suffix="contact_1", speed=1, height_ratio=0.4)
 
     with col2:
         st.markdown("""
@@ -729,7 +746,7 @@ if selected == "Kontakt":
 
 
     with col2:
-        st_lottie(lottie_a4, speed=1, width=400, height=400, key=None, quality="medium", loop=False, reverse=False)
+        display_lottie_responsive(lottie_a4, key_suffix="contact_2", speed=1, loop=False, height_ratio=0.6)
 
     st.markdown("""---""")
 
